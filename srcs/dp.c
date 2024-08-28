@@ -12,13 +12,13 @@
 
 #include "../includes/dp.h"
 
-int	initialize_dp(int map_info_fd, int **dp, int *max_col, char *symbol)
+int	initialize_dp(int map_info_fd, int ***dp, int *max_col, char *symbol)
 {
 	int		temp_fd;
 	char	buf[1];
 	int		idx;
 
-	max_col = 0;
+	*max_col = 0;
 	temp_fd = open("tmp", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	while(read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
 	{
@@ -28,34 +28,34 @@ int	initialize_dp(int map_info_fd, int **dp, int *max_col, char *symbol)
 			return (0);
 		}
 		write(temp_fd, buf, 1);
-		max_col++;
+		(*max_col)++;
 	}
 	close(temp_fd);
-	dp = (int **) malloc (sizeof(int *) * 2);
+	(*dp) = (int **) malloc (sizeof(int *) * 2);
 	if (dp == NULL)
 		return (0);
-	dp[0] = (int *) malloc (sizeof(int) * *max_col);
-	if (dp[0] == NULL)
+	(*dp)[0] = (int *) malloc (sizeof(int) * (*max_col));
+	if ((*dp)[0] == NULL)
 	{
 		free(dp);
 		return (0);
 	}
-	dp[1] = (int *) malloc (sizeof(int) * *max_col);
-	if (dp[1] == NULL)
+	(*dp)[1] = (int *) malloc (sizeof(int) * (*max_col));
+	if ((*dp)[1] == NULL)
 	{
-		free(dp[0]);
-		free(dp);
+		free((*dp)[0]);
+		free(*dp);
 		return (0);
 	}
 	temp_fd = open("tmp", O_RDONLY);
 	idx = 0;
 	while (read(temp_fd, buf, 1) > 0)
 	{
-		dp[0][idx] = 0;
+		(*dp)[0][idx] = 0;
 		if (buf[0] == symbol[0])
-			dp[1][idx] = 1;
+			(*dp)[1][idx] = 1;
 		else if (buf[0] == symbol[1])
-			dp[1][idx] = 0;
+			(*dp)[1][idx] = 0;
 		idx++;
 	}
 	close(temp_fd);
@@ -69,7 +69,7 @@ int	initialize_dp(int map_info_fd, int **dp, int *max_col, char *symbol)
  * result[1] : 최대값이 나타나는 열번호 (x 좌표)
  * result[2] : 최대크기
  */
-int	update_dp(int **dp, int *result, int row, int max_col)
+int	update_dp(int ***dp, int **result, int row, int max_col)
 {
 	int	c;
 
@@ -77,13 +77,13 @@ int	update_dp(int **dp, int *result, int row, int max_col)
 	c = 0;
 	while (++c < max_col)
 	{
-		if (dp[1][c] != 0)
-			dp[1][c] = min(dp[0][c], dp[1][c - 1], dp[0][c - 1]) + 1;
-		if (dp[1][c] > result[2])
+		if ((*dp)[1][c] != 0)
+			(*dp)[1][c] = min((*dp)[0][c], (*dp)[1][c - 1], (*dp)[0][c - 1]) + 1;
+		if ((*dp)[1][c] > (*result)[2])
 		{
-			result[0] = row;
-			result[1] = c;
-			result[2] = dp[1][c];
+			(*result)[0] = row;
+			(*result)[1] = c;
+			(*result)[2] = (*dp)[1][c];
 		}
 	}
 
@@ -91,13 +91,13 @@ int	update_dp(int **dp, int *result, int row, int max_col)
 	c = -1;
 	while (++c < max_col)
 	{
-		dp[0][c] = dp[1][c];
-		dp[1][c] = 0;
+		(*dp)[0][c] = (*dp)[1][c];
+		(*dp)[1][c] = 0;
 	}
 	return (1);
 }
 
-int	insert_dp(int map_info_fd, int **dp, int max_col, char *symbol)
+int	insert_dp(int map_info_fd, int ***dp, int max_col, char *symbol)
 {
 	char	buf[1];
 	int		c;
@@ -109,7 +109,7 @@ int	insert_dp(int map_info_fd, int **dp, int max_col, char *symbol)
 		if (read(map_info_fd, buf, 1) <= 0
 			|| (buf[0] != symbol[0] && buf[0] != symbol[1]))
 			return (0);
-		dp[1][c] = buf[0];
+		(*dp)[1][c] = buf[0];
 	}
 	return (1);
 }

@@ -32,7 +32,7 @@ int	processing(char *filename)
 	if (!read_meta(map_info_fd, &meta)
 		|| !is_valid_meta(&meta)
 		|| !parse_meta_info(&meta, &symbol, &max_row)
-		|| !find_max(map_info_fd, &result, &meta, max_row))
+		|| !find_max(map_info_fd, &result, &symbol, max_row))
 	{
 		close(map_info_fd);
 		if (meta != NULL)
@@ -89,14 +89,16 @@ int	parse_meta_info(char **meta, char **symbol, int *max_row)
 
 	meta_len = ft_strlen(*meta);
 	idx = -1;
-	while (++idx < meta_len -3)
-		*max_row = (*max_row * 10) + (*meta[idx] - '0');
+	(*max_row) = 0;
+	while (++idx < meta_len - 3)
+		(*max_row) = ((*max_row) * 10) + ((*meta)[idx] - '0');
 	*symbol = (char *) malloc(sizeof(char) * 4);
 	if (symbol == NULL)
 		return (0);
-	*(symbol) = *(meta + (meta_len - 3));
-	*(symbol + 1) = *(meta + (meta_len - 2));
-	*(symbol + 2) = *(meta + (meta_len - 1));
+	*(*symbol) = *((*meta) + (meta_len - 3));
+	*((*symbol) + 1) = *((*meta) + (meta_len - 2));
+	*((*symbol) + 2) = *((*meta) + (meta_len - 1));
+	*((*symbol) + 3) = '\0';
 	return (1);
 }
 
@@ -107,16 +109,16 @@ int		find_max(int map_info_fd, int **result, char **symbol, int max_row)
 	int		max_col;
 
 	dp = 0;
-	*result = (int *) malloc(sizeof(int) * 3);
-	if (result == NULL)
+	(*result) = (int *) malloc(sizeof(int) * 3);
+	if ((*result) == NULL)
 		return (0);
-	if (!initialize_dp(map_info_fd, dp, &max_col, *symbol))
+	if (!initialize_dp(map_info_fd, &dp, &max_col, *symbol))
 		return (0);
 	row = 0;
 	while (row <= max_row)
 	{
-		update_dp(dp, *result, row++, max_col);
-		if(!insert_dp(map_info_fd, dp, max_col, *symbol))
+		update_dp(&dp, result, row++, max_col);
+		if(!insert_dp(map_info_fd, &dp, max_col, *symbol))
 			return (0);
 	}
 	return (1);
@@ -137,8 +139,8 @@ void	print_result(int fd, int **result, char **symbol)
 	// 찾은 범위는 full character 로 바꿔서 화면 출력
 	while (read(fd, buf, 1) == 1)
 	{
-		if ((*result[0] - *result[2] < row && row <= *result[0])
-			&& (*result[1] - *result[2] < col && col <= *result[1]))
+		if (((*result)[0] - (*result)[2] < row && row <= (*result)[0])
+			&& ((*result)[1] - (*result)[2] < col && col <= (*result)[1]))
 			write(1, &symbol[2], 1);
 		else
 			write(1, buf, 1);
