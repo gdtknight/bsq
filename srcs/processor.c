@@ -6,7 +6,7 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 23:33:16 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 20:28:40 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 23:09:35 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,18 +106,33 @@ int		find_max(int map_info_fd, int **result, char **symbol, int max_row)
 {
 	int		**dp;
 	int		row;
+	int		col;
 	int		max_col;
 
+	if (max_row == 0)
+		return (0);
 	dp = 0;
 	(*result) = (int *) malloc(sizeof(int) * 3);
 	if ((*result) == NULL)
 		return (0);
 	if (!initialize_dp(map_info_fd, &dp, &max_col, *symbol))
 		return (0);
-	row = 0;
-	while (row <= max_row)
+	if (max_row == 1)
 	{
-		update_dp(&dp, result, row++, max_col);
+		col = -1;
+		while (++col < max_col)
+			if (dp[1][col] == 1)
+			{
+				(*result)[0] = 0;
+				(*result)[1] = col;
+				(*result)[2] = 1;
+				return (1);
+			}
+	}
+	row = -1;
+	while (++row < max_row)
+	{
+		update_dp(&dp, result, row, max_col);
 		if(!insert_dp(map_info_fd, &dp, max_col, *symbol))
 			return (0);
 	}
@@ -141,7 +156,7 @@ void	print_result(int fd, int **result, char **symbol)
 	{
 		if (((*result)[0] - (*result)[2] < row && row <= (*result)[0])
 			&& ((*result)[1] - (*result)[2] < col && col <= (*result)[1]))
-			write(1, &symbol[2], 1);
+			write(1, &((*symbol)[2]), 1);
 		else
 			write(1, buf, 1);
 		col++;

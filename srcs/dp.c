@@ -6,11 +6,12 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 14:45:51 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 20:25:37 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 22:59:24 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/dp.h"
+#include <stdio.h>
 
 int	initialize_dp(int map_info_fd, int ***dp, int *max_col, char *symbol)
 {
@@ -100,16 +101,24 @@ int	update_dp(int ***dp, int **result, int row, int max_col)
 int	insert_dp(int map_info_fd, int ***dp, int max_col, char *symbol)
 {
 	char	buf[1];
+	// int		status;
 	int		c;
 
 	// 현재 행과 관련된 dp 배열 업데이트
 	c = -1;
-	while (++c < max_col)
+	while (++c < max_col && read(map_info_fd, buf, 1) > 0)
 	{
-		if (read(map_info_fd, buf, 1) <= 0
-			|| (buf[0] != symbol[0] && buf[0] != symbol[1]))
+		if (buf[0] == symbol[0])
+			(*dp)[1][c] = 1;
+		else if (buf[0] == symbol[1])
+			(*dp)[1][c] = 0;
+		else
 			return (0);
-		(*dp)[1][c] = buf[0];
+	}
+	if (c == max_col)
+	{
+		if (read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
+			return (0);
 	}
 	return (1);
 }
