@@ -6,7 +6,7 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 14:45:51 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 23:17:49 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 23:39:13 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,25 +15,8 @@
 
 int	initialize_dp(int map_info_fd, int ***dp, int *max_col, char *symbol)
 {
-	int		temp_fd;
-	char	buf[1];
-	int		idx;
-
-	*max_col = 0;
-	temp_fd = open("tmp", \
-O_RDWR | O_CREAT | O_TRUNC, \
-				S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-	while (read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
-	{
-		if (buf[0] != symbol[0] && buf[0] != symbol[1])
-		{
-			close(temp_fd);
-			return (0);
-		}
-		write(temp_fd, buf, 1);
-		(*max_col)++;
-	}
-	close(temp_fd);
+	if (!prework(map_info_fd, max_col, symbol))
+		return (0);
 	(*dp) = (int **) malloc (sizeof(int *) * 2);
 	if (dp == NULL)
 		return (0);
@@ -50,6 +33,40 @@ O_RDWR | O_CREAT | O_TRUNC, \
 		free(*dp);
 		return (0);
 	}
+	if (!fill_dp(dp, symbol))
+		return (0);
+	return (1);
+}
+
+int	prework(int map_info_fd, int *max_col, char *symbol)
+{
+	int		temp_fd;
+	char	buf[1];
+
+	*max_col = 0;
+	temp_fd = open("tmp", \
+O_RDWR | O_CREAT | O_TRUNC, \
+				S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+	while (read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
+	{
+		if (buf[0] != symbol[0] && buf[0] != symbol[1])
+		{
+			close(temp_fd);
+			return (0);
+		}
+		write(temp_fd, buf, 1);
+		(*max_col)++;
+	}
+	close(temp_fd);
+	return (1);
+}
+
+int	fill_dp(int ***dp, char *symbol)
+{
+	char	buf[1];
+	int		temp_fd;
+	int		idx;
+
 	temp_fd = open("tmp", O_RDONLY);
 	idx = 0;
 	while (read(temp_fd, buf, 1) > 0)
