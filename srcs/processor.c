@@ -6,7 +6,7 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 23:33:16 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 23:24:44 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 23:42:31 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,7 @@ int	processing(char *filename)
 		|| !find_max(map_info_fd, &result, &symbol, max_row))
 	{
 		close(map_info_fd);
-		if (meta != NULL)
-			free(meta);
-		if (symbol != NULL)
-			free(symbol);
-		if (result != NULL)
-			free(result);
+		finalize(&meta, &symbol, &result);
 		return (0);
 	}
 	close(map_info_fd);
@@ -49,13 +44,18 @@ int	processing(char *filename)
 		return (0);
 	print_result(map_info_fd, &result, &symbol, max_row);
 	close(map_info_fd);
+	finalize(&meta, &symbol, &result);
+	return (1);
+}
+
+void	finalize(char **meta, char **symbol, int **result)
+{
 	if (meta != NULL)
 		free(meta);
 	if (symbol != NULL)
 		free(symbol);
 	if (result != NULL)
 		free(result);
-	return (1);
 }
 
 int	read_meta(int map_info_fd, char **meta)
