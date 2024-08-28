@@ -6,7 +6,7 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 14:45:51 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 22:59:24 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 23:17:49 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,10 @@ int	initialize_dp(int map_info_fd, int ***dp, int *max_col, char *symbol)
 	int		idx;
 
 	*max_col = 0;
-	temp_fd = open("tmp", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-	while(read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
+	temp_fd = open("tmp", \
+O_RDWR | O_CREAT | O_TRUNC, \
+				S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+	while (read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
 	{
 		if (buf[0] != symbol[0] && buf[0] != symbol[1])
 		{
@@ -74,12 +76,12 @@ int	update_dp(int ***dp, int **result, int row, int max_col)
 {
 	int	c;
 
-	// 현재 행과 관련된 dp 배열 업데이트
 	c = 0;
 	while (++c < max_col)
 	{
 		if ((*dp)[1][c] != 0)
-			(*dp)[1][c] = min((*dp)[0][c], (*dp)[1][c - 1], (*dp)[0][c - 1]) + 1;
+			(*dp)[1][c] = \
+				min((*dp)[0][c], (*dp)[1][c - 1], (*dp)[0][c - 1]) + 1;
 		if ((*dp)[1][c] > (*result)[2])
 		{
 			(*result)[0] = row;
@@ -87,8 +89,6 @@ int	update_dp(int ***dp, int **result, int row, int max_col)
 			(*result)[2] = (*dp)[1][c];
 		}
 	}
-
-	// 다음 행 탐색을 위해 현재 dp 배열 정보를 한 행 위로 올림.
 	c = -1;
 	while (++c < max_col)
 	{
@@ -101,10 +101,8 @@ int	update_dp(int ***dp, int **result, int row, int max_col)
 int	insert_dp(int map_info_fd, int ***dp, int max_col, char *symbol)
 {
 	char	buf[1];
-	// int		status;
 	int		c;
 
-	// 현재 행과 관련된 dp 배열 업데이트
 	c = -1;
 	while (++c < max_col && read(map_info_fd, buf, 1) > 0)
 	{

@@ -6,7 +6,7 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 23:30:53 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 14:21:05 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 23:25:46 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,8 @@ int	main(int argc, char **argv)
 	idx = 0;
 	while (++idx < argc)
 	{
-		if(!processing(argv[idx]))
-			write(1, "map error", 9);
-		write(1, "\n", 1);
+		if (!processing(argv[idx]))
+			write(1, "map error\n", 10);
 	}
 	exit(0);
 }

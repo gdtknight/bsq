@@ -6,7 +6,7 @@
 /*   By: yoshin <yoshin@student.42gyeongsan.kr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 23:33:16 by yoshin            #+#    #+#             */
-/*   Updated: 2024/08/28 23:09:35 by yoshin           ###   ########.fr       */
+/*   Updated: 2024/08/28 23:24:44 by yoshin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,10 @@ int	processing(char *filename)
 		return (0);
 	}
 	close(map_info_fd);
-
 	map_info_fd = open(filename, O_RDONLY);
-	print_result(map_info_fd, &result, &symbol);
+	if (result[2] < 1)
+		return (0);
+	print_result(map_info_fd, &result, &symbol, max_row);
 	close(map_info_fd);
 	if (meta != NULL)
 		free(meta);
@@ -65,8 +66,11 @@ int	read_meta(int map_info_fd, char **meta)
 	int		size;
 
 	size = 0;
-	temp_fd = open("tmp", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-	while(read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
+	temp_fd = open(\
+				"tmp", \
+				O_RDWR | O_CREAT | O_TRUNC, \
+				S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+	while (read(map_info_fd, buf, 1) > 0 && buf[0] != '\n')
 	{
 		write(temp_fd, buf, 1);
 		size++;
@@ -102,7 +106,7 @@ int	parse_meta_info(char **meta, char **symbol, int *max_row)
 	return (1);
 }
 
-int		find_max(int map_info_fd, int **result, char **symbol, int max_row)
+int	find_max(int map_info_fd, int **result, char **symbol, int max_row)
 {
 	int		**dp;
 	int		row;
@@ -121,6 +125,7 @@ int		find_max(int map_info_fd, int **result, char **symbol, int max_row)
 	{
 		col = -1;
 		while (++col < max_col)
+		{
 			if (dp[1][col] == 1)
 			{
 				(*result)[0] = 0;
@@ -128,18 +133,20 @@ int		find_max(int map_info_fd, int **result, char **symbol, int max_row)
 				(*result)[2] = 1;
 				return (1);
 			}
+		}
+		return (0);
 	}
 	row = -1;
 	while (++row < max_row)
 	{
 		update_dp(&dp, result, row, max_col);
-		if(!insert_dp(map_info_fd, &dp, max_col, *symbol))
+		if (!insert_dp(map_info_fd, &dp, max_col, *symbol))
 			return (0);
 	}
 	return (1);
 }
 
-void	print_result(int fd, int **result, char **symbol)
+void	print_result(int fd, int **result, char **symbol, int max_row)
 {
 	char	buf[1];
 	int		row;
@@ -147,11 +154,8 @@ void	print_result(int fd, int **result, char **symbol)
 
 	row = 0;
 	col = 0;
-	// 첫째줄 건너뛰고
 	while (read(fd, buf, 1) == 1 && buf[0] != '\n')
 		;
-	// 두번째줄부터 파일 1바이트씩 읽고 출력
-	// 찾은 범위는 full character 로 바꿔서 화면 출력
 	while (read(fd, buf, 1) == 1)
 	{
 		if (((*result)[0] - (*result)[2] < row && row <= (*result)[0])
@@ -160,10 +164,10 @@ void	print_result(int fd, int **result, char **symbol)
 		else
 			write(1, buf, 1);
 		col++;
-		if (buf[0] == '\n')
+		if (row < max_row && buf[0] == '\n')
 		{
-			row++;
 			col = 0;
+			row++;
 		}
 	}
 }
